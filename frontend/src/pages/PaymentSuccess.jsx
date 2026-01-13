@@ -1,317 +1,181 @@
-// import React, { useEffect, useState } from 'react';
-// import { useSearchParams, useNavigate } from 'react-router-dom';
-// import axios from 'axios';
-
-// const PaymentSuccess = () => {
-//   const [searchParams] = useSearchParams();
-//   const navigate = useNavigate();
-//   const paymentId = searchParams.get('paymentID');
-
-//   const [statusMessage, setStatusMessage] = useState('Processing your payment...');
-//   const [loading, setLoading] = useState(true);
-//   const [details, setDetails] = useState(null);
-
-//   useEffect(() => {
-//     const executePayment = async () => {
-//       if (!paymentId) {
-//         setStatusMessage('❌ No payment ID found.');
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         const res = await axios.post('http://localhost:3000/api/bkash/execute-payment', { paymentId });
-//         console.log('Execute Payment Response:', res.data);
-//         setDetails(res.data);
-
-//         // ✅ Consider success if executed or already completed
-//         const isSuccess =
-//           res.data.transactionStatus === 'Completed' ||
-//           res.data.message === 'Payment was already completed' ||
-//           res.data.details?.internalCode === 'payment_already_completed' ||
-//           res.data.details?.internalCode === 'ETC70052';
-
-//         if (isSuccess) {
-//           setStatusMessage('✅ Payment Successful!');
-//           setTimeout(() => navigate('/profile/orderHistory'), 2500);
-//         } else {
-//           setStatusMessage(`❌ Payment Failed! Status: ${res.data.transactionStatus || 'Unknown'}`);
-//           setTimeout(() => navigate('/cart'), 4000);
-//         }
-//       } catch (err) {
-//         console.error('Execute Payment Error:', err.response?.data || err.message);
-//         setStatusMessage('❌ Payment Failed! Please try again.');
-//         setDetails(err.response?.data || err.message);
-//         setTimeout(() => navigate('/cart'), 4000);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     executePayment();
-//   }, [paymentId, navigate]);
-
-//   return (
-//     <div className="flex flex-col items-center justify-center h-screen bg-gray-50 text-red-600 px-4">
-//       <h1 className="text-3xl font-semibold text-center">{statusMessage}</h1>
-
-//       {loading && (
-//         <p className="mt-4 text-gray-600 text-center">
-//           Please wait while we confirm your transaction...
-//         </p>
-//       )}
-
-//       {details && (
-//         <div className="mt-6 w-full max-w-2xl">
-//           <h2 className="text-xl font-semibold mb-2 text-red-700">Payment Details (Debug)</h2>
-//           <pre className="p-4 bg-gray-100 rounded-lg text-gray-800 overflow-auto">
-//             {JSON.stringify(details, null, 2)}
-//           </pre>
-//         </div>
-//       )}
-
-//       {!loading && statusMessage.includes('Failed') && (
-//         <button
-//           onClick={() => window.location.reload()}
-//           className="mt-6 bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded"
-//         >
-//           Retry Payment
-//         </button>
-//       )}
-
-//       {!loading && statusMessage.includes('Payment Successful') && (
-//         <button
-//           onClick={() => navigate('/profile/orderHistory')}
-//           className="mt-6 bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded"
-//         >
-//           View Orders
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default PaymentSuccess;
-
-
-// import React, { useEffect, useState } from 'react';
-// import { useSearchParams, useNavigate } from 'react-router-dom';
-// import axios from 'axios';
-
-// const PaymentSuccess = () => {
-//   const [searchParams] = useSearchParams();
-//   const navigate = useNavigate();
-//   const paymentId = searchParams.get('paymentID');
-
-//   const [statusMessage, setStatusMessage] = useState('Processing your payment...');
-//   const [loading, setLoading] = useState(true);
-//   const [details, setDetails] = useState(null);
-
-//   useEffect(() => {
-//     const executePayment = async () => {
-//       if (!paymentId) {
-//         setStatusMessage('❌ No payment ID found.');
-//         setLoading(false);
-//         return;
-//       }
-
-//       try {
-//         const res = await axios.post('http://localhost:3000/api/bkash/execute-payment', { paymentId });
-//         console.log('Execute Payment Response:', res.data);
-//         setDetails(res.data);
-
-//         const isSuccess =
-//           res.data.transactionStatus === 'Completed' ||
-//           res.data.message === 'Payment was already completed' ||
-//           res.data.details?.internalCode === 'payment_already_completed' ||
-//           res.data.details?.internalCode === 'ETC70052';
-
-//         if (isSuccess) {
-//           setStatusMessage('✅ Payment Successful!');
-
-//           // -------------------------------
-//           // ⭐ PLACE ORDER AFTER PAYMENT SUCCESS
-//           // -------------------------------
-//           try {
-//             await axios.post(
-//               "http://localhost:3000/api/order/place-order",
-//               {},
-//               {
-//                 headers: {
-//                   id: localStorage.getItem("id"),
-//                   authorization: `Bearer ${localStorage.getItem("token")}`,
-//                 },
-//               }
-//             );
-
-//             // -------------------------------
-//             // ⭐ CLEAR CART AFTER ORDER SUCCESS
-//             // -------------------------------
-//             await axios.delete("http://localhost:3000/api/cart/clear-cart", {
-//               headers: {
-//                 id: localStorage.getItem("id"),
-//                 authorization: `Bearer ${localStorage.getItem("token")}`,
-//               },
-//             });
-
-//             console.log("Cart cleared successfully!");
-//           } catch (err) {
-//             console.error("Order/Cart Error:", err.response?.data || err.message);
-//           }
-
-//           setTimeout(() => navigate('/profile/orderHistory'), 2500);
-//         } else {
-//           setStatusMessage(`❌ Payment Failed! Status: ${res.data.transactionStatus || 'Unknown'}`);
-//           setTimeout(() => navigate('/cart'), 4000);
-//         }
-//       } catch (err) {
-//         console.error('Execute Payment Error:', err.response?.data || err.message);
-//         setStatusMessage('❌ Payment Failed! Please try again.');
-//         setDetails(err.response?.data || err.message);
-//         setTimeout(() => navigate('/cart'), 4000);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     executePayment();
-//   }, [paymentId, navigate]);
-
-//   return (
-//     <div className="flex flex-col items-center justify-center h-screen bg-gray-50 text-red-600 px-4">
-//       <h1 className="text-3xl font-semibold text-center">{statusMessage}</h1>
-
-//       {loading && (
-//         <p className="mt-4 text-gray-600 text-center">
-//           Please wait while we confirm your transaction...
-//         </p>
-//       )}
-
-//       {details && (
-//         <div className="mt-6 w-full max-w-2xl">
-//           <h2 className="text-xl font-semibold mb-2 text-red-700">Payment Details (Debug)</h2>
-//           <pre className="p-4 bg-gray-100 rounded-lg text-gray-800 overflow-auto">
-//             {JSON.stringify(details, null, 2)}
-//           </pre>
-//         </div>
-//       )}
-
-//       {!loading && statusMessage.includes('Failed') && (
-//         <button
-//           onClick={() => window.location.reload()}
-//           className="mt-6 bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded"
-//         >
-//           Retry Payment
-//         </button>
-//       )}
-
-//       {!loading && statusMessage.includes('Payment Successful') && (
-//         <button
-//           onClick={() => navigate('/profile/orderHistory')}
-//           className="mt-6 bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded"
-//         >
-//           View Orders
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default PaymentSuccess;
-
-
-
-
-// againnnnnn////
-
-
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const PaymentSuccess = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const paymentId = searchParams.get('paymentID');
+  const location = useLocation();
 
-  const [statusMessage, setStatusMessage] = useState('Processing your payment...');
   const [loading, setLoading] = useState(true);
-  const [details, setDetails] = useState(null);
+  const [message, setMessage] = useState("Processing your payment...");
+
+  // useEffect(() => {
+  //   const payWithSavedAgreement = async () => {
+  //     try {
+  //       // Extract query params from URL
+  //       const params = new URLSearchParams(location.search);
+  //       const agreementId = params.get("agreementId");
+  //       const trxId = params.get("trxId");
+  //       const total = params.get("total");
+
+  //       if (trxId) {
+  //         setMessage(`✅ Payment Successful, bKash Transaction ID: ${trxId}`);
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       if (!agreementId) {
+  //         setMessage("❌ Agreement ID missing in the callback URL");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       // Call your backend to execute payment with agreement
+  //       const res = await axios.post("http://localhost:3000/api/bkash/payment/create", {
+  //           agreementId: agreementId,
+  //           payerReference: "adasda",
+  //           amount: total,
+  //           merchantInvoiceNumber: "INV-" + Date.now(),
+  //         });
+  //         console.log(res.data);
+  //       if (res.data?.transactionStatus === "Initiated" && res.data?.bkashURL) {
+  //         window.open(res.data.bkashURL, "_self");
+  //       } else {
+  //         setMessage("❌ Payment Creation Failed: " + res.data?.message || "Unknown error");
+  //       }
+  //     } catch (err) {
+  //       console.error(err.response?.data || err.message);
+  //       setMessage("❌ Payment Inoitiation Failed");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   payWithSavedAgreement();
+  // }, [location.search, navigate]);
+
+
+  // useEffect(() => {
+  //   const payWithOutAgreement = async () => {
+  //     try {
+  //       // Extract query params from URL
+  //       const params = new URLSearchParams(location.search);
+  //       const paymentID = params.get("paymentID");
+  //       // const wotrxId = params.get("wotrxId");
+
+  //       // if (wotrxId) {
+  //       //   setMessage(`✅ Payment Successful, bKash Transaction ID: ${wotrxId}`);
+  //       //   setLoading(false);
+  //       //   return;
+  //       // }
+
+  //       if (!paymentID) {
+  //         setMessage("❌ Payment ID missing in the callback URL");
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       // Call your backend to execute payment with agreement
+  //       const res = await axios.post("http://localhost:3000/api/bkash/execute-payment", {
+  //           paymentId: paymentID,
+  //         });
+  //         console.log(res.data);
+  //       if (res.data?.transactionStatus === "Completed" && res.data?.trxId) {
+  //        setMessage(`✅ Payment Successful, bKash Transaction ID: ${res.data.trxId}`);
+  //        setLoading(false);
+  //       } else {
+  //         setMessage("❌ Payment Creation Failed: " + res.data?.message || "Unknown error");
+  //         setLoading(false);
+  //       }
+  //     } catch (err) {
+  //       console.error(err.response?.data || err.message);
+  //       setMessage("❌ Payment Inoitiation Failed");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   payWithOutAgreement();
+  // }, [location.search, navigate]);
 
   useEffect(() => {
-    const executePayment = async () => {
-      if (!paymentId) {
-        setStatusMessage('❌ No payment Ipayment_already_completedD found.');
+  const handlePaymentCallback = async () => {
+    try {
+      const params = new URLSearchParams(location.search);
+
+      const agreementId = params.get("agreementId");
+      const paymentID = params.get("paymentID");
+      const trxId = params.get("trxId");
+      const total = params.get("total");
+
+      // 1️⃣ If trxId exists → payment already successful
+      if (trxId) {
+        setMessage(`✅ Payment Successful, bKash Transaction ID: ${trxId}`);
         setLoading(false);
         return;
       }
 
-      try {
-        const res = await axios.post('http://localhost:3000/api/bkash/execute-payment', { paymentId });
-        console.log('Execute Payment Response:', res.data);
-        setDetails(res.data);
+      // 2️⃣ Agreement-based payment flow
+      if (agreementId) {
+        const res = await axios.post(
+          "http://localhost:3000/api/bkash/payment/create",
+          {
+            agreementId,
+            payerReference: "adasda",
+            amount: total,
+            merchantInvoiceNumber: "INV-" + Date.now(),
+          }
+        );
 
-        const isSuccess =
-          res.data.transactionStatus === 'Completed' ||
-          res.data.message === 'Payment was already completed' ||
-          res.data.details?.internalCode === '' ||
-          res.data.details?.internalCode === 'ETC70052';
-
-        if (isSuccess) {
-          setStatusMessage('✅ Payment and order completed successfully!');
-          setTimeout(() => navigate('/profile/orderHistory'), 2500);
-        } else {
-          setStatusMessage(`❌ Payment Failed! Status: ${res.data.transactionStatus || 'Unknown'}`);
-          setTimeout(() => navigate('/cart'), 4000);
+        if (res.data?.transactionStatus === "Initiated" && res.data?.bkashURL) {
+          window.open(res.data.bkashURL, "_self");
+          return;
         }
-      } catch (err) {
-        console.error('Execute Payment Error:', err.response?.data || err.message);
-        setStatusMessage('❌ Payment Failed! Please try again.');
-        setDetails(err.response?.data || err.message);
-        setTimeout(() => navigate('/cart'), 4000);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    executePayment();
-  }, [paymentId, navigate]);
+        setMessage("❌ Payment Creation Failed");
+        setLoading(false);
+        return;
+      }
+
+      // 3️⃣ Non-agreement payment flow
+      if (paymentID) {
+        const res = await axios.post(
+          "http://localhost:3000/api/bkash/execute-payment",
+          { paymentId: paymentID }
+        );
+
+        if (res.data?.transactionStatus === "Completed") {
+          setMessage(`✅ Payment Successful, bKash Transaction ID: ${res.data.originalResponse.trxId}`);
+        } else {
+          setMessage("❌ Payment Execution Failed");
+        }
+
+        setLoading(false);
+        return;
+      }
+
+      // 4️⃣ Nothing matched
+      setMessage("❌ Invalid payment callback");
+      setLoading(false);
+
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setMessage("❌ Payment Processing Failed");
+      setLoading(false);
+    }
+  };
+
+  handlePaymentCallback();
+}, [location.search]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-50 text-red-600 px-4">
-      <h1 className="text-3xl font-semibold text-center">{statusMessage}</h1>
-
-      {loading && (
-        <p className="mt-4 text-gray-600 text-center">
-          Please wait while we confirm your transaction...
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      {loading ? (
+        <p className="text-lg font-semibold">{message}</p>
+      ) : (
+        <p className={`text-lg font-semibold ${message.includes("❌") ? "text-red-500" : "text-green-500"}`}>
+          {message}
         </p>
-      )}
-
-      {details && (
-        <div className="mt-6 w-full max-w-2xl">
-          <h2 className="text-xl font-semibold mb-2 text-red-700">Payment Details (Debug)</h2>
-          <pre className="p-4 bg-gray-100 rounded-lg text-gray-800 overflow-auto">
-            {JSON.stringify(details, null, 2)}
-          </pre>
-        </div>
-      )}
-
-      {!loading && statusMessage.includes('Failed') && (
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-6 bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded"
-        >
-          Retry Payment
-        </button>
-      )}
-
-      {!loading && statusMessage.includes('Payment and order completed') && (
-        <button
-          onClick={() => navigate('/profile/orderHistory')}
-          className="mt-6 bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded"
-        >
-          View Orders
-        </button>
       )}
     </div>
   );

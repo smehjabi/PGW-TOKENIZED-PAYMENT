@@ -69,9 +69,9 @@ router.post('/create-payment', async (req, res) => {
     const { amount, payerReference, callbackURL, merchantInvoiceNumber } = req.body;
     const payload = {
       mode: "0011",
-      payerReference: payerReference || "01770618567",
+      payerReference: payerReference || Date.now(),
       callbackURL: callbackURL || "http://localhost:5173/payment-success",
-      amount: amount?.toString() || "1.00",
+      amount: amount?.toString(),
       currency: "BDT",
       intent: "sale",
       merchantInvoiceNumber: merchantInvoiceNumber || `INV-${Date.now()}`

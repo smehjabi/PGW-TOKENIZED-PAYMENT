@@ -1,11 +1,14 @@
+
 // const express = require("express");
 // const router = express.Router();
 // const axios = require("axios");
 // const { ensureValidToken } = require("../helpers/bkashAgreement");
 
-// // ===========================
-// // 1️⃣ Create Payment With Agreement
-// // ===========================
+// /**
+//  * ===========================
+//  * 1️⃣ Create Payment With Agreement
+//  * ===========================
+//  */
 // router.post("/create", async (req, res) => {
 //   try {
 //     const token = await ensureValidToken();
@@ -14,190 +17,84 @@
 //       payerReference,
 //       amount,
 //       merchantInvoiceNumber,
-//       subMerchantName, // optional
 //     } = req.body;
-
+//     console.log(req.body);
 //     if (!agreementId || !payerReference || !amount || !merchantInvoiceNumber) {
 //       return res.status(400).json({ error: "Missing required fields" });
 //     }
 
 //     const response = await axios.post(
-//       process.env.BKASH_BASE_URL + "payment-with-agreement/create",
+//       `${process.env.BKASH_BASE_URL}payment-with-agreement/create`,
 //       {
-//         agreementId,
-//         payerReference,
-//         amount,
+//         agreementId : req.body.agreementId,
+//         // payerReference,
+//         amount : req.body.amount,
 //         currency: "BDT",
 //         intent: "sale",
-//         merchantInvoiceNumber,
-//         subMerchantName: subMerchantName || "",
-//         callbackURL: `${process.env.SERVER_URL}/api/bkash-payment/execute`, // bKash callback URL
+//         merchantInvoiceNumber: "12121212sdfsdf",
+//         callbackURL: `${process.env.SERVER_URL}/api/bkash-payment/execute`,
 //       },
 //       {
 //         headers: {
-//           Authorization: "Bearer " + token,
+//           Authorization: token,
 //           "X-App-Key": process.env.BKASH_APP_KEY,
 //           "Content-Type": "application/json",
 //         },
 //       }
 //     );
 
-//     return res.json(response.data);
+//     res.json(response.data);
 //   } catch (err) {
 //     console.error(err.response?.data || err.message);
-//     return res.status(500).json({ error: err.response?.data || err.message });
+//     res.status(500).json({ error: err.response?.data || err.message });
 //   }
 // });
 
-// // ===========================
-// // 2️⃣ Execute Payment With Agreement
-// // Handles:
-// // - POST from Postman or backend for manual execution
-// // - GET callback from bKash for success/failure/cancel
-// // ===========================
-// router.all("/execute", async (req, res) => {
+// /**
+//  * ===========================
+//  * 2️⃣ Execute Payment With Agreement
+//  * ===========================
+//  */
+// router.get("/execute", async (req, res) => {
 //   try {
 //     const token = await ensureValidToken();
 
-//     // Get paymentId and agreementId from POST body or GET query
-//     const paymentId = req.body.paymentId || req.query.paymentID;
-//     const agreementId = req.body.agreementId || req.query.agreementId;
-//     const status = req.query.status || null; // success/failure/cancel
+//     const paymentId = req.query.paymentID; // bKash sends paymentID
+//     const agreementId = req.query.agreementId;
+//     const status = req.query.status;
 
 //     if (!paymentId || !agreementId) {
-//       return res.status(400).json({ error: "paymentId and agreementId are required" });
+//       return res.status(400).json({ error: "paymentId or agreementId missing" });
+//     }
+//     if (status !== "success") {
+//       return res.redirect("/payment-failed");
 //     }
 
-//     if (req.method === "POST") {
-//       // Manual execution via Postman
-//       const response = await axios.post(
-//         process.env.BKASH_BASE_URL + "payment-with-agreement/execute",
-//         { paymentId, agreementId },
-//         {
-//           headers: {
-//             Authorization: "Bearer " + token,
-//             "X-App-Key": process.env.BKASH_APP_KEY,
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       );
+//     const executeResponse = await axios.post(
+//       `${process.env.BKASH_BASE_URL}payment-with-agreement/execute`,
+//       {
+//         paymentId,
+//         agreementId,
+//       },
+//       {
+//         headers: {
+//           Authorization: token,
+//           "X-App-Key": process.env.BKASH_APP_KEY,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
 
-//       return res.json(response.data);
-//     } else {
-//       // GET request from bKash callback
-//       console.log("bKash callback received:", { paymentId, agreementId, status });
+//     console.log("Payment executed:", executeResponse.data);
 
-//       // Here you can update your DB with transaction status if needed
+//     // 👉 Save trxId, payment status, payerAccount in DB here
 
-//       return res.send("Callback received successfully");
-//     }
+//     res.redirect("http://localhost:5173/payment-success");
 //   } catch (err) {
-//     console.error(err.response?.data || err.message);
-//     return res.status(500).json({ error: err.response?.data || err.message });
+//     console.error("Payment execute error:", err.response?.data || err.message);
+//     res.status(500).json({ error: err.response?.data || err.message });
 //   }
-// });
+// });  
+
 
 // module.exports = router;
-
-
-
-const express = require("express");
-const router = express.Router();
-const axios = require("axios");
-const { ensureValidToken } = require("../helpers/bkashAgreement");
-
-/**
- * ===========================
- * 1️⃣ Create Payment With Agreement
- * ===========================
- */
-router.post("/create", async (req, res) => {
-  try {
-    const token = await ensureValidToken();
-    const {
-      agreementId,
-      payerReference,
-      amount,
-      merchantInvoiceNumber,
-      subMerchantName,
-    } = req.body;
-
-    if (!agreementId || !payerReference || !amount || !merchantInvoiceNumber) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    const response = await axios.post(
-      `${process.env.BKASH_BASE_URL}payment-with-agreement/create`,
-      {
-        agreementId,
-        payerReference,
-        amount,
-        currency: "BDT",
-        intent: "sale",
-        merchantInvoiceNumber,
-        subMerchantName: subMerchantName || "",
-        callbackURL: `${process.env.SERVER_URL}/api/bkash-payment/execute`,
-      },
-      {
-        headers: {
-          Authorization: token,
-          "X-App-Key": process.env.BKASH_APP_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    res.json(response.data);
-  } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json({ error: err.response?.data || err.message });
-  }
-});
-
-/**
- * ===========================
- * 2️⃣ Execute Payment With Agreement
- * ===========================
- */
-router.get("/execute", async (req, res) => {
-  try {
-    const token = await ensureValidToken();
-
-    const paymentId = req.query.paymentID; // bKash sends paymentID
-    const agreementId = req.query.agreementId;
-    const status = req.query.status;
-
-    if (!paymentId || !agreementId) {
-      return res.status(400).json({ error: "paymentId or agreementId missing" });
-    }
-    if (status !== "success") {
-      return res.redirect("/payment-failed");
-    }
-
-    const executeResponse = await axios.post(
-      `${process.env.BKASH_BASE_URL}payment-with-agreement/execute`,
-      {
-        paymentId,
-        agreementId,
-      },
-      {
-        headers: {
-          Authorization: token,
-          "X-App-Key": process.env.BKASH_APP_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("Payment executed:", executeResponse.data);
-
-    // 👉 Save trxId, payment status, payerAccount in DB here
-
-    res.redirect("/payment-success");
-  } catch (err) {
-    console.error("Payment execute error:", err.response?.data || err.message);
-    res.status(500).json({ error: err.response?.data || err.message });
-  }
-});
-
-module.exports = router;

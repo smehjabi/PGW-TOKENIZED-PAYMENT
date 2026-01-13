@@ -14,6 +14,8 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import OrderHistory from './pages/OrderHistory';
 import ViewFood from "./pages/ViewFood";
 import Chatbot from "./components/Chatbot/Chatbot";
+import Checkout from "./pages/Checkout"
+
 // import Offers from "./pages/Offers";
 
 const App = () => {
@@ -33,6 +35,7 @@ const App = () => {
           <Route path="/view-food-details/:id" element={<ViewFood />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/Checkout" element={<Checkout />} />
           {/* <Route path="/offers" element={<Offers />} /> */}
         </Routes>
       </main>

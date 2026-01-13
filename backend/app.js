@@ -24,7 +24,7 @@ const foodRoute = require('./routes/food');
 const PopularDishesRoute = require('./routes/PopularDishes');
 const RecommendedMealsRoute = require('./routes/RecommendedMeals');
 const bkashAgreementRoutes = require("./routes/bkashAgreement");
-const bkashPaymentRoutes = require("./routes/bkashPayment");
+// const bkashPaymentRoutes = require("./routes/bkashPayment");
 
 // Register routes
 app.use('/api/user', userRoute);
@@ -33,8 +33,8 @@ app.use('/api/cart', cartRoute);
 app.use('/api/order', orderRoute);
 app.use('/api/bkash', bkashRoute);
 app.use('/api/food', foodRoute);
-app.use("/api/bkash-agreement", bkashAgreementRoutes);
-app.use("/api/bkash-payment", bkashPaymentRoutes);
+app.use("/api/bkash", bkashAgreementRoutes);
+// app.use("/api/bkash-payment", bkashPaymentRoutes);
 
 
 app.use('/api/PopularDishes', PopularDishesRoute);
