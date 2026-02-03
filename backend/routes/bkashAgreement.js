@@ -107,12 +107,16 @@
 // module.exports = router;
 
 
+// const express = require("express");
+// const router = express.Router();
+// const axios = require("axios");
+// const { ensureValidToken } = require("../helpers/bkashAgreement");
+// const BkashAgreement = require("../models/bkashAgreement");
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const { ensureValidToken } = require("../helpers/bkashAgreement");
 const BkashAgreement = require("../models/bkashAgreement");
-
 /**
  * ===========================
  * 1️⃣ CREATE AGREEMENT
@@ -305,6 +309,24 @@ router.get("/payment/execute", async (req, res) => {
     console.error(err.response?.data || err.message);
     res.status(500).json({ error: err.response?.data || err.message });
   }
+});
+router.get("/agreement/saved", async (req, res) => {
+  const agreement = await BkashAgreement.findOne({ status: "ACTIVE" });
+
+  if (!agreement) {
+    return res.json({ hasAgreement: false });
+  }
+
+  const masked =
+    agreement.walletNumber.slice(0, 2) +
+    "******" +
+    agreement.walletNumber.slice(-2);
+
+  res.json({
+    hasAgreement: true,
+    agreementId: agreement.agreementId,
+    walletMasked: masked,
+  });
 });
 
 module.exports = router;
